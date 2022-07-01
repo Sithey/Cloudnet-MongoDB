@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+}
+
+group 'fr.sithey'
+version '1.0-SNAPSHOT'
+
+jar.setDestinationDir(new File(""))
+compileJava.options.encoding = 'UTF-8'
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.cloudnetservice.eu/repository/releases/' }
+}
+
+configurations {
+    extraLibs
+}
+
+dependencies {
+    implementation 'de.dytanic.cloudnet:cloudnet-wrapper-jvm:3.4.5-RELEASE'
+    implementation 'de.dytanic.cloudnet:cloudnet:3.4.5-RELEASE'
+    implementation 'de.dytanic.cloudnet:cloudnet-driver:3.4.5-RELEASE'
+    compileOnly'org.mongodb:mongo-java-driver:3.12.11'
+}
+
+jar {
+    from {
+        configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}

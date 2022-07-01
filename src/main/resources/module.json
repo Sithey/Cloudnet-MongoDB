@@ -1,0 +1,18 @@
+{
+  "runtimeModule": true,
+  "group": "fr.sithey.cloudnet.modules",
+  "name": "CloudNet-Database-MongoDB",
+  "version": "1.0",
+  "author": "Sithey",
+  "description": "CloudNet extension, which includes the database support for MongoDB database to store",
+  "main": "fr.sithey.cloudnet.ext.database.mongodb.CloudNetMongoDBDatabaseModule",
+  "storesSensitiveData": true,
+  "dependencies": [
+    {
+      "group": "org.mongodb",
+      "name": "mongo-java-driver",
+      "version": "3.12.11",
+      "repo": "maven"
+    }
+  ]
+}
