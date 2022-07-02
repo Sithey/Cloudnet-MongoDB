@@ -85,7 +85,6 @@ public class MongoDBDatabaseProvider extends AbstractDatabaseProvider {
 
     @Override
     public void close() throws Exception {
-        mongoClient.close();
         this.executorService.shutdownNow();
     }
 
