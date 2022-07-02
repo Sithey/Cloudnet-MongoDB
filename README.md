@@ -1,6 +1,8 @@
 
 # CloudNet MongoDB Database Module allows CloudNet to use MongoDB as its database.
 
+![cloud-icon-mdb-8xy98nt0gq](https://user-images.githubusercontent.com/44400280/177003325-3a1716ec-8650-44b2-bfed-2360896a7422.png)
+
 ## Requirements
 
 - [MongoDB Database](https://www.mongodb.com)
