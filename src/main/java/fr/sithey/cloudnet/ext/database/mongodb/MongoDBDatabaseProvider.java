@@ -48,7 +48,6 @@ public class MongoDBDatabaseProvider extends AbstractDatabaseProvider {
     @Override
     public Database getDatabase(String name) {
         this.removedOutdatedEntries();
-        System.out.println("check " + name);
         if (!this.cachedDatabaseInstances.contains(name)) {
             this.cachedDatabaseInstances.add(name, System.currentTimeMillis() + NEW_CREATION_DELAY, new MongoDBDatabase(this, name, Boolean.parseBoolean(config.getString("async"))));
         }

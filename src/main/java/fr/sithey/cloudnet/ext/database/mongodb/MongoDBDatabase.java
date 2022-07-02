@@ -43,8 +43,7 @@ public class MongoDBDatabase implements Database {
         if (contains(key)){
             update(key, document);
         }else{
-            collection.insertOne(new Document().append(TABLE_COLUMN_KEY, key).append(TABLE_COLUMN_VALUE, document.toJson()));
-            System.out.println("insert " + key + ": " + document.toPrettyJson());
+            collection.insertOne(new Document().append(TABLE_COLUMN_KEY, key).append(TABLE_COLUMN_VALUE, Document.parse(document.toJson())));
         }
         return true;
     }
@@ -52,8 +51,7 @@ public class MongoDBDatabase implements Database {
     @Override
     public boolean update(String key, JsonDocument document) {
         if (contains(key)){
-            collection.replaceOne(eq(TABLE_COLUMN_KEY, key), new Document().append(TABLE_COLUMN_KEY, key).append(TABLE_COLUMN_VALUE, document.toJson()));
-            System.out.println("update " + key + ": " + document.toPrettyJson());
+            collection.replaceOne(eq(TABLE_COLUMN_KEY, key), new Document().append(TABLE_COLUMN_KEY, key).append(TABLE_COLUMN_VALUE, Document.parse(document.toJson())));
         }else{
             insert(key, document);
         }
@@ -62,21 +60,26 @@ public class MongoDBDatabase implements Database {
 
     @Override
     public boolean contains(String key) {
-        System.out.println("contain " + key);
         return collection.find(eq(TABLE_COLUMN_KEY, key)).first() != null;
     }
 
     @Override
     public boolean delete(String key) {
         collection.deleteOne(eq(TABLE_COLUMN_KEY, key));
-        System.out.println("delete " + key);
         return true;
     }
 
     @Override
     public JsonDocument get(String key) {
-        if (contains(key))
-            return JsonDocument.newDocument(collection.find(eq(TABLE_COLUMN_KEY, key)).first().getString(TABLE_COLUMN_VALUE));
+        if (contains(key)){
+            JsonDocument json = new JsonDocument();
+            Document doc = collection.find(eq(TABLE_COLUMN_KEY, key)).first();
+            doc = ((Document) doc.get(TABLE_COLUMN_VALUE));
+            for (String keys : doc.keySet()){
+                json.append(keys, doc.get(keys));
+            }
+            return json;
+        }
         return null;
     }
 
@@ -84,7 +87,11 @@ public class MongoDBDatabase implements Database {
     public List<JsonDocument> get(String fieldName, Object fieldValue) {
         List<JsonDocument> jsons = new ArrayList<>();
         collection.find().forEach((Block<? super Document>) doc -> {
-            JsonDocument json = JsonDocument.newDocument(doc.get(TABLE_COLUMN_VALUE));
+            JsonDocument json = new JsonDocument();
+            doc = ((Document) doc.get(TABLE_COLUMN_VALUE));
+            for (String keys : doc.keySet()){
+                json.append(keys, doc.get(keys));
+            }
             if (json.get(fieldName).equals(fieldValue)){
                 jsons.add(json);
             }
@@ -96,10 +103,19 @@ public class MongoDBDatabase implements Database {
     public List<JsonDocument> get(JsonDocument filters) {
         List<JsonDocument> jsons = new ArrayList<>();
         collection.find().forEach((Block<? super Document>) doc -> {
-            JsonDocument json = JsonDocument.newDocument(doc.get(TABLE_COLUMN_VALUE));
-            if (json.toJson().equals(filters.toJson())){
-                jsons.add(json);
+            JsonDocument json = new JsonDocument();
+            doc = ((Document) doc.get(TABLE_COLUMN_VALUE));
+            for (String keys : doc.keySet()){
+                json.append(keys, doc.get(keys));
             }
+            boolean similar = true;
+            for (String key : filters.keys()){
+                if (json.get(key).toString().equalsIgnoreCase(filters.get(key).toString()))
+                    continue;
+                similar = false;
+            }
+            if (similar)
+                jsons.add(json);
         });
         return jsons;
     }
@@ -117,7 +133,12 @@ public class MongoDBDatabase implements Database {
     public Collection<JsonDocument> documents() {
         List<JsonDocument> jsons = new ArrayList<>();
         collection.find().forEach((Block<? super Document>) doc -> {
-            jsons.add(JsonDocument.newDocument(doc.getString(TABLE_COLUMN_VALUE)));
+            JsonDocument json = new JsonDocument();
+            doc = ((Document) doc.get(TABLE_COLUMN_VALUE));
+            for (String keys : doc.keySet()){
+                json.append(keys, doc.get(keys));
+            }
+            jsons.add(json);
         });
         return jsons;
     }
@@ -126,7 +147,12 @@ public class MongoDBDatabase implements Database {
     public Map<String, JsonDocument> entries() {
         Map<String, JsonDocument> value = new HashMap<>();
         collection.find().forEach((Block<? super Document>) doc -> {
-            value.put(doc.getString(TABLE_COLUMN_KEY), JsonDocument.newDocument(doc.getString(TABLE_COLUMN_VALUE)));
+            JsonDocument json = new JsonDocument();
+            doc = ((Document) doc.get(TABLE_COLUMN_VALUE));
+            for (String keys : doc.keySet()){
+                json.append(keys, doc.get(keys));
+            }
+            value.put(doc.getString(TABLE_COLUMN_KEY), json);
         });
         return value;
     }
